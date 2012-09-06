@@ -1,0 +1,8 @@
+This is a tool for generating pretty HTML pages summarizing Talos[1]
+results.  The tool is intended to take archives of dev.tree-management
+over a given date range and turn them into something useful for further
+inspection.
+
+It does not yet work for all possible tests.
+
+[1] https://wiki.mozilla.org/Buildbot/Talos
