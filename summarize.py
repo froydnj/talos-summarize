@@ -83,7 +83,7 @@ class TalosDelta:
         self.amount = amount
         self.platform = platform
     def __eq__(self, other):
-        return self.platform == other.platform
+        return other is not None and self.platform == other.platform
     def __ne__(self, other):
         return self.platform != other.platform
     def __hash__(self):
@@ -365,27 +365,32 @@ class TableChangeRow:
             c.output_html()
         print '</tr>'
 
+def try_increase_rowspan_of_previous_cell(rows, platform, delta):
+    for r in reversed(rows):
+        cell = r.cell_for_platform(platform)
+        if cell is not None:
+            if cell.delta == delta:
+                cell.rowspan += 1
+                return True
+            return False
+    return False
+
 def build_table_structure(platforms, changes):
     table_rows = []
     for c in changes:
         current = TableChangeRow(c.fromchange, c.tochange)
         for p in platforms:
-            had_platform = False
+            inserted_cell = False
             for d in c.deltas:
                 if d.for_platform(p):
                     # Try to make the cells maximally large for any
                     # given delta.  See if this ought to combine with
-                    # the previous row.
-                    if len(table_rows) > 0:
-                        previous_row = table_rows[-1]
-                        cell = previous_row.cell_for_platform(p)
-                        if cell.delta is not None and cell.delta == d:
-                            cell.rowspan += 1
-                            break
-                    current.add_cell(p, d)
-                    had_platform = True
+                    # some previous row.
+                    if not try_increase_rowspan_of_previous_cell(table_rows, p, d):
+                        current.add_cell(p, d)
+                    inserted_cell = True
                     break
-            if not had_platform:
+            if not inserted_cell:
                 current.add_cell(p, None)
         table_rows.append(current)
     return table_rows
