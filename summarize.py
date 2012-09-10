@@ -23,7 +23,8 @@ m_i_rev = "http://hg.mozilla.org/integration/mozilla-inbound/rev/%s"
 subject_percent_change_re = re.compile("^Talos (?:Regression|Improvement).*?(de|in)crease ([0-9]+(?:\\.[0-9]+(?:e\\+[0-9]+)?)?)%", re.DOTALL)
 changeset_range_re = re.compile(r"Changeset range: http://hg.mozilla.org/integration/mozilla-inbound/pushloghtml\?fromchange=([0-9a-f]{12,})&tochange=([0-9a-f]{12,})")
 
-platforms = ['XP', 'Win7', 'MacOSX 10.6 (rev4)', 'Linux x64', 'Linux', 'WINNT 5.2', 'WINNT 6.1']
+platforms = ['XP', 'Win7', 'MacOSX 10.6 (rev4)', 'Linux x64', 'Linux', 'WINNT 5.2', 'WINNT 6.1',
+             'CentOS release 5 (Final)', 'CentOS (x86_64) release 5 (Final)', 'MacOSX 10.7']
 tests = ['Ts, MED Dirty Profile',
          'Ts, MAX Dirty Profile',
          'Ts, Paint',
