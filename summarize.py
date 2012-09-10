@@ -424,9 +424,6 @@ def main(argv):
         if info is None:
             continue
         insert_info_into_list(info, interesting_changes)
-        print 'current'
-        for c in interesting_changes:
-            print c
 
     # Cleanup by removing from == to changes.
     interesting_changes = [c for c in interesting_changes if not c.fromchange.same_node(c.tochange)]
@@ -443,7 +440,7 @@ def main(argv):
         last.deltas = merge_deltas(c, last)
     interesting_changes = temp
 
-    #output_html_for(interesting_changes, argv[1], argv[2])
+    output_html_for(interesting_changes, argv[1], argv[2])
 
 if __name__ == '__main__':
     main(sys.argv[1:])
