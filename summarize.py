@@ -398,7 +398,7 @@ def output_html_for(changes, date_range, talos_test):
     platforms = [x for x in platforms]
     platforms.sort()
 
-    print '<table>'
+    print '<table border=1>'
     output_header_row(platforms)
     structure = build_table_structure(platforms, changes)
     for r in structure:
