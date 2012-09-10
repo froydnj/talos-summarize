@@ -152,8 +152,8 @@ def relevant_messages(mbox, date_range, talos_test):
     test_of_interest = re.escape(talos_test)
     platform_of_interest = '|'.join([re.escape(p) for p in platforms])
 
-    platform_tree_test = re.compile("^Talos (?:Regression|Improvement).*?" + test_of_interest + r".*?(" + platform_of_interest + ") " + tree_of_interest + "$")
-    trans_table = string.maketrans("\t", " ")
+    platform_tree_test = re.compile("^Talos (?:Regression|Improvement).*?" + test_of_interest + r" (?:in|de)crease.*?(" + platform_of_interest + ") " + tree_of_interest + "$")
+    subject_trans_table = string.maketrans("\t", " ")
 
     for msg in mbox.itervalues():
         to = msg.get('To')
@@ -167,7 +167,7 @@ def relevant_messages(mbox, date_range, talos_test):
         if subject is None:
             continue
 
-        subject = subject.translate(trans_table, "\n")
+        subject = subject.translate(subject_trans_table, "\n")
         match = platform_tree_test.search(subject)
         if match is not None:
             matched_platform = match.group(1)
