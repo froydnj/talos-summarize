@@ -20,7 +20,7 @@ m_i_json_pushes_url = "http://hg.mozilla.org/integration/mozilla-inbound/json-pu
 m_i_pushloghtml = "http://hg.mozilla.org/integration/mozilla-inbound/pushloghtml?fromchange=%s&tochange=%s"
 m_i_rev = "http://hg.mozilla.org/integration/mozilla-inbound/rev/%s"
 
-subject_percent_change_re = re.compile("^Talos (?:Regression|Improvement).*?(de|in)crease ([0-9]+\\.[0-9]+)%", re.DOTALL)
+subject_percent_change_re = re.compile("^Talos (?:Regression|Improvement).*?(de|in)crease ([0-9]+(?:\\.[0-9]+(?:e\\+[0-9]+)?)?)%", re.DOTALL)
 changeset_range_re = re.compile(r"Changeset range: http://hg.mozilla.org/integration/mozilla-inbound/pushloghtml\?fromchange=([0-9a-f]{12,})&tochange=([0-9a-f]{12,})")
 
 platforms = ['XP', 'Win7', 'MacOSX 10.6 (rev4)', 'Linux x64', 'Linux', 'WINNT 5.2', 'WINNT 6.1']
