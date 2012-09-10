@@ -237,14 +237,6 @@ def insert_info_into_list(info, global_list):
             continue
 
         # Now the interesting cases
-        print i
-        print 'i from', info.fromchange.date
-        print 'i to', info.tochange.date
-        print 'p from', point.fromchange.date
-        print 'p to', point.tochange.date
-        print 'i.f < p.f', info.fromchange < point.fromchange
-        print 'i.f == p.f', info.fromchange == point.fromchange
-        print 'i.f > p.f', info.fromchange > point.fromchange
         if info.fromchange > point.fromchange:
             if info.tochange < point.tochange:
                 #     |-----INFO----|
