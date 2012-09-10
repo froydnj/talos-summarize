@@ -111,6 +111,10 @@ def grovel_message_information(msg, platform):
     fromchange = match.group(1)
     tochange = match.group(2)
 
+    if fromchange == tochange:
+        # Bizarre.  Skip this.
+        return None
+
     deltas = set()
     deltas.add(TalosDelta(sign, amount, platform))
 
@@ -124,8 +128,6 @@ def grovel_message_information(msg, platform):
     # You would be wrong.
     json_items = json_pushes.items()
     json_items.sort(key=lambda x: x[0])
-    if len(json_items) == 0:
-        print 'UNABLE TO GET INFO for', m_i_url
     first = json_items[0]
     last = json_items[-1]
     ci.fromchange.date = time.gmtime(first[1]['date'])
@@ -374,6 +376,8 @@ def main(argv):
 
     for (msg, platform) in relevant_messages(mbox, argv[1], argv[2]):
         info = grovel_message_information(msg, platform)
+        if info is None:
+            continue
         insert_info_into_list(info, interesting_changes)
         print 'current'
         for c in interesting_changes:
