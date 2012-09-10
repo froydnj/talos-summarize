@@ -329,22 +329,66 @@ def url_for_change(change):
     else:
         return m_i_pushloghtml % (change.fromchange, change.tochange)
 
-def output_change_row(platforms, change):
-    print '<tr>'
-    print '<td><a href="%s">%s to %s</a></td>' % (url_for_change(change), change.fromchange, change.tochange)
-    for p in platforms:
-        had_platform = False
-        for d in change.deltas:
-            if d.for_platform(p):
-                attr = ' style="background:#6666ff"'
-                if d.sign == '+':
-                    attr = ' style="background:red"'
-                print '  <td%s>%s%s</td>' % (attr, d.sign, d.amount)
-                had_platform = True
-                break
-        if not had_platform:
+class TableChangeCell:
+    def __init__(self, platform, delta):
+        self.platform = platform
+        self.delta = delta
+        self.rowspan = 1
+    def output_html(self):
+        if self.delta is None:
             print '  <td></td>'
-    print '</tr>'
+        else:
+            attr = ' style="background:#6666ff"'
+            if self.delta.sign == '+':
+                attr = ' style="background:red"'
+            rowspan_attr = ''
+            if self.rowspan > 1:
+                rowspan_attr = ' rowspan="%s"' % self.rowspan
+            print '  <td%s%s>%s%s</td>' % (attr, rowspan_attr, self.delta.sign, self.delta.amount)
+
+class TableChangeRow:
+    def __init__(self, fromchange, tochange):
+        self.fromchange = fromchange
+        self.tochange = tochange
+        self.cells = []
+    def add_cell(self, platform, delta):
+        self.cells.append(TableChangeCell(platform, delta))
+    def cell_for_platform(self, platform):
+        for c in self.cells:
+            if platform == c.platform:
+                return c
+        return None
+    def output_html(self):
+        print '<tr>'
+        print '<td><a href="%s">%s to %s</a></td>' % (m_i_pushloghtml % (self.fromchange, self.tochange), self.fromchange, self.tochange)
+        for c in self.cells:
+            c.output_html()
+        print '</tr>'
+
+def build_table_structure(platforms, changes):
+    table_rows = []
+    for c in changes:
+        current = TableChangeRow(c.fromchange, c.tochange)
+        for p in platforms:
+            had_platform = False
+            for d in c.deltas:
+                if d.for_platform(p):
+                    # Try to make the cells maximally large for any
+                    # given delta.  See if this ought to combine with
+                    # the previous row.
+                    if len(table_rows) > 0:
+                        previous_row = table_rows[-1]
+                        cell = previous_row.cell_for_platform(p)
+                        if cell.delta is not None and cell.delta == d:
+                            cell.rowspan += 1
+                            break
+                    current.add_cell(p, d)
+                    had_platform = True
+                    break
+            if not had_platform:
+                current.add_cell(p, None)
+        table_rows.append(current)
+    return table_rows
 
 def output_html_for(changes, date_range, talos_test):
     print '<html><head><title>Summary of changes for %s for %s</title></head>' % (talos_test, date_range)
@@ -356,8 +400,9 @@ def output_html_for(changes, date_range, talos_test):
 
     print '<table>'
     output_header_row(platforms)
-    for c in changes:
-        output_change_row(platforms, c)
+    structure = build_table_structure(platforms, changes)
+    for r in structure:
+        r.output_html()
     print '</table>'
     print '</body>'
     print '</html>'
