@@ -97,7 +97,9 @@ class TalosDelta:
 def grovel_message_information(msg, platform):
     subject = msg.get('Subject')
     match = subject_percent_change_re.search(subject)
-    assert match is not None
+    if match is None:
+        print >>sys.stdout, subject, 'did not match!'
+        assert match is not None
     sign = { 'de': '-', 'in': '+' }[match.group(1)]
     amount = float(match.group(2))
 
