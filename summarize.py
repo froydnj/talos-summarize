@@ -336,7 +336,7 @@ def output_change_row(platforms, change):
         had_platform = False
         for d in change.deltas:
             if d.for_platform(p):
-                attr = ' style="background:blue"'
+                attr = ' style="background:#6666ff"'
                 if d.sign == '+':
                     attr = ' style="background:red"'
                 print '  <td%s>%s%s</td>' % (attr, d.sign, d.amount)
