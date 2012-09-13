@@ -430,12 +430,15 @@ def output_html_for(changes, date_range, talos_test):
                                 'date_range': date_range,
                                 'table': '\n'.join(rows) })
 
+def talos_test_to_filename(talos_test):
+    tt = string.maketrans(" ", "-")
+    return string.translate(tt, ",()").lower() + ".html"
 
-def main(argv):
-    mbox = mailbox.mbox(argv[0])
+def digest_mailbox_to_summary(mbox, date_range, talos_test)
+    mbox = mailbox.mbox(mbox)
     interesting_changes = []
 
-    for (msg, platform) in relevant_messages(mbox, argv[1], argv[2]):
+    for (msg, platform) in relevant_messages(mbox, date_range, talos_test):
         info = grovel_message_information(msg, platform)
         if info is None:
             continue
@@ -456,7 +459,11 @@ def main(argv):
         last.deltas = merge_deltas(c, last)
     interesting_changes = temp
 
-    print output_html_for(interesting_changes, argv[1], argv[2])
+    with open(talos_test_to_filename(talos_test), 'r') as f:
+        print >>f, output_html_for(interesting_changes, argv[1], argv[2])
+
+def main(argv):
+    digest_mailbox_to_summary(argv[0], argv[1], argv[2])
 
 if __name__ == '__main__':
     main(sys.argv[1:])
