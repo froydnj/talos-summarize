@@ -430,6 +430,29 @@ def output_html_for(changes, date_range, talos_test):
                                 'date_range': date_range,
                                 'table': '\n'.join(rows) })
 
+all_talos_test_descriptions = [ 'Ts, MED Dirty Profile',
+                                'Ts, MAX Dirty Profile',
+                                'SVG, Opacity Row Major',
+                                'Dromaeo (DOM)',
+                                'Dromaeo (CSS)',
+                                'SunSpider 2 MozAfterpaint',
+                                'DHTML Row Major MozAfterPaint',
+                                'DHTML 2 MozAfterPaint',
+                                'Ts Shutdown, MAX Dirty Profile',
+                                'Ts Shutdown, MED Dirty Profile',
+                                'V8',
+                                'Paint',
+                                'tscroll',
+                                'Number of Constructors',
+                                'Tp5 No Network Row Major MozAfterPaint',
+                                'Trace Malloc MaxHeap',
+                                'Trace Malloc Allocs',
+                                'Trace Malloc Leaks',
+                                'a11y Row Major MozAfterPaint',
+                                'Ts, Paint',
+                                'Robocop Pan Benchmark',
+                                'Robocop Checkboarding Real User Benchmark' ]
+
 def talos_test_to_filename(talos_test):
     tt = string.maketrans(" ", "-")
     return string.translate(tt, ",()").lower() + ".html"
