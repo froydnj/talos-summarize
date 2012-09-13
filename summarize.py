@@ -435,7 +435,6 @@ def talos_test_to_filename(talos_test):
     return string.translate(tt, ",()").lower() + ".html"
 
 def digest_mailbox_to_summary(mbox, date_range, talos_test)
-    mbox = mailbox.mbox(mbox)
     interesting_changes = []
 
     for (msg, platform) in relevant_messages(mbox, date_range, talos_test):
@@ -463,7 +462,8 @@ def digest_mailbox_to_summary(mbox, date_range, talos_test)
         print >>f, output_html_for(interesting_changes, argv[1], argv[2])
 
 def main(argv):
-    digest_mailbox_to_summary(argv[0], argv[1], argv[2])
+    mbox = mailbox.mbox(argv[0])
+    digest_mailbox_to_summary(mbox, argv[1], argv[2])
 
 if __name__ == '__main__':
     main(sys.argv[1:])
