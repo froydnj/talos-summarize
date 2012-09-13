@@ -488,8 +488,9 @@ def digest_mailbox_to_summary(mbox, date_range, talos_test)
         last.deltas = merge_deltas(c, last)
     interesting_changes = temp
 
-    with open(talos_test_to_filename(talos_test), 'r') as f:
-        print >>f, output_html_for(interesting_changes, argv[1], argv[2])
+    if len(interesting_changes) > 0:
+        with open(talos_test_to_filename(talos_test), 'r') as f:
+            print >>f, output_html_for(interesting_changes, argv[1], argv[2])
 
     n_regression_ranges = len(interesting_changes)
     return n_regression_ranges, n_emails_sent
