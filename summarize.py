@@ -491,7 +491,9 @@ def digest_mailbox_to_summary(mbox, date_range, talos_test)
 
 def main(argv):
     mbox = mailbox.mbox(argv[0])
-    digest_mailbox_to_summary(mbox, argv[1], argv[2])
+    for test in all_talos_test_descriptions:
+        n_ranges, n_emails = digest_mailbox_to_summary(mbox, argv[1], test)
+        print '%s: %d ranges, %d emails' % (test, n_ranges, n_emails)
 
 if __name__ == '__main__':
     main(sys.argv[1:])
