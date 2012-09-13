@@ -459,8 +459,10 @@ def talos_test_to_filename(talos_test):
 
 def digest_mailbox_to_summary(mbox, date_range, talos_test)
     interesting_changes = []
+    n_emails_sent = 0
 
     for (msg, platform) in relevant_messages(mbox, date_range, talos_test):
+        n_emails_sent += 1
         info = grovel_message_information(msg, platform)
         if info is None:
             continue
@@ -483,6 +485,9 @@ def digest_mailbox_to_summary(mbox, date_range, talos_test)
 
     with open(talos_test_to_filename(talos_test), 'r') as f:
         print >>f, output_html_for(interesting_changes, argv[1], argv[2])
+
+    n_regression_ranges = len(interesting_changes)
+    return n_regression_ranges, n_emails_sent
 
 def main(argv):
     mbox = mailbox.mbox(argv[0])
