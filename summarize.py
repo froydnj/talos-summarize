@@ -319,12 +319,11 @@ def collect_platforms(changes):
             platforms.add(d.platform)
     return platforms
 
+header_row_template = string.Template('<tr><th>Pushlog</th>${headers}</tr>')
+
 def output_header_row(platforms):
-    print '<tr>'
-    print '<th>Pushlog</th>'
-    for p in platforms:
-        print '  <th>', p, '</th>'
-    print '</tr>'
+    mapping = { 'headers': '\n'.join(['<th>%s</th>' % p for p in platforms]) }
+    return header_row_template.substitute(mapping)
 
 def url_for_change(change):
     if change.fromchange == change.tochange:
@@ -332,22 +331,30 @@ def url_for_change(change):
     else:
         return m_i_pushloghtml % (change.fromchange, change.tochange)
 
+cell_template = string.Template('<td${style}${rowspan}>${sign}${amount}</td>')
+
 class TableChangeCell:
     def __init__(self, platform, delta):
         self.platform = platform
         self.delta = delta
         self.rowspan = 1
     def output_html(self):
-        if self.delta is None:
-            print '  <td></td>'
-        else:
-            attr = ' style="background:#6666ff"'
+        mapping = { 'style': '',
+                    'rowspan': '',
+                    'sign': '',
+                    'amount': '' }
+        if self.delta is not None:
+            style = ' style="background:#6666ff"'
             if self.delta.sign == '+':
-                attr = ' style="background:red"'
-            rowspan_attr = ''
+                style = ' style="background:red"'
+            mapping['style'] = style
             if self.rowspan > 1:
-                rowspan_attr = ' rowspan="%s"' % self.rowspan
-            print '  <td%s%s>%s%s</td>' % (attr, rowspan_attr, self.delta.sign, self.delta.amount)
+                mapping['rowspan'] = ' rowspan="%s"' % self.rowspan
+            mapping['sign'] = self.delta.sign
+            mapping['amount'] = self.delta.amount
+        return cell_template.substitute(mapping)
+
+row_template = string.Template('<tr>${cells}</tr>')
 
 class TableChangeRow:
     def __init__(self, fromchange, tochange):
@@ -362,11 +369,10 @@ class TableChangeRow:
                 return c
         return None
     def output_html(self):
-        print '<tr>'
-        print '<td><a href="%s">%s to %s</a></td>' % (m_i_pushloghtml % (self.fromchange, self.tochange), self.fromchange, self.tochange)
-        for c in self.cells:
-            c.output_html()
-        print '</tr>'
+        url = m_i_pushloghtml % (self.fromchange, self.tochange)
+        tds = ['<td><a href="%s">%s to %s</a></td>' % (url, self.fromchange, self.tochange)]
+        tds.extend([c.output_html() for c in self.cells])
+        return row_template.substitute({ 'cells': '\n'.join(tds) })
 
 def try_increase_rowspan_of_previous_cell(rows, platform, delta):
     for r in reversed(rows):
@@ -398,22 +404,32 @@ def build_table_structure(platforms, changes):
         table_rows.append(current)
     return table_rows
 
+html_page_template = string.Template("""
+<html>
+<head>
+  <title>Summary of changes for ${test} over ${date_range}</title>
+</head>
+<body>
+<h1>Summary of changes for ${test} over ${date_range}</h1>
+<table border="1">
+${table}
+</table>
+</body>
+</html>""")
+
 def output_html_for(changes, date_range, talos_test):
-    print '<html><head><title>Summary of changes for %s for %s</title></head>' % (talos_test, date_range)
-    print '<body>'
-    print '<h1>Summary of changes for %s over %s</h1>' % (talos_test, date_range)
     platforms = collect_platforms(changes)
     platforms = [x for x in platforms]
     platforms.sort()
 
-    print '<table border=1>'
-    output_header_row(platforms)
+    rows = [output_header_row(platforms)]
     structure = build_table_structure(platforms, changes)
-    for r in structure:
-        r.output_html()
-    print '</table>'
-    print '</body>'
-    print '</html>'
+    rows.extend([r.output_html() for r in structure])
+
+    return html_page_template({ 'test': talos_test,
+                                'date_range': date_range,
+                                'table': '\n'.join(rows) })
+
 
 def main(argv):
     mbox = mailbox.mbox(argv[0])
@@ -440,7 +456,7 @@ def main(argv):
         last.deltas = merge_deltas(c, last)
     interesting_changes = temp
 
-    output_html_for(interesting_changes, argv[1], argv[2])
+    print output_html_for(interesting_changes, argv[1], argv[2])
 
 if __name__ == '__main__':
     main(sys.argv[1:])
