@@ -445,13 +445,18 @@ all_talos_test_descriptions = [ 'Ts, MED Dirty Profile',
                                 'tscroll',
                                 'Number of Constructors',
                                 'Tp5 No Network Row Major MozAfterPaint',
+                                'Tp5 No Network Row Major MozAfterPaint (Private Bytes)',
+                                'Tp5 No Network Row Major MozAfterPaint (Main RSS)',
+                                'Tp5 No Network Row Major MozAfterPaint (Content RSS)',
+                                'Tp5 No Network Row Major MozAfterPaint (%CPU)',
                                 'Trace Malloc MaxHeap',
                                 'Trace Malloc Allocs',
                                 'Trace Malloc Leaks',
                                 'a11y Row Major MozAfterPaint',
                                 'Ts, Paint',
                                 'Robocop Pan Benchmark',
-                                'Robocop Checkboarding Real User Benchmark' ]
+                                'Robocopy Checkerboarding No Snapshot Benchmark',
+                                'Robocop Checkerboarding Real User Benchmark' ]
 
 def talos_test_to_filename(talos_test):
     tt = string.maketrans(" ", "-")
