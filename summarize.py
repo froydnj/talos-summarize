@@ -426,9 +426,9 @@ def output_html_for(changes, date_range, talos_test):
     structure = build_table_structure(platforms, changes)
     rows.extend([r.output_html() for r in structure])
 
-    return html_page_template({ 'test': talos_test,
-                                'date_range': date_range,
-                                'table': '\n'.join(rows) })
+    return html_page_template.substitute({ 'test': talos_test,
+                                           'date_range': date_range,
+                                           'table': '\n'.join(rows) })
 
 all_talos_test_descriptions = [ 'Ts, MED Dirty Profile',
                                 'Ts, MAX Dirty Profile',
@@ -460,9 +460,9 @@ all_talos_test_descriptions = [ 'Ts, MED Dirty Profile',
 
 def talos_test_to_filename(talos_test):
     tt = string.maketrans(" ", "-")
-    return string.translate(tt, ",()").lower() + ".html"
+    return string.translate(talos_test, tt, ",()").lower() + ".html"
 
-def digest_mailbox_to_summary(mbox, date_range, talos_test)
+def digest_mailbox_to_summary(mbox, date_range, talos_test):
     interesting_changes = []
     n_emails_sent = 0
 
@@ -489,8 +489,8 @@ def digest_mailbox_to_summary(mbox, date_range, talos_test)
     interesting_changes = temp
 
     if len(interesting_changes) > 0:
-        with open(talos_test_to_filename(talos_test), 'r') as f:
-            print >>f, output_html_for(interesting_changes, argv[1], argv[2])
+        with open(talos_test_to_filename(talos_test), 'w') as f:
+            print >>f, output_html_for(interesting_changes, date_range, talos_test)
 
     n_regression_ranges = len(interesting_changes)
     return n_regression_ranges, n_emails_sent
