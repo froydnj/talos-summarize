@@ -94,8 +94,18 @@ class TalosDelta:
     def for_platform(self, p):
         return self.platform == p
 
-def grovel_message_information(msg, platform):
+subject_trans_table = string.maketrans("\t", " ")
+
+def subject_of(msg):
+    global subject_trans_table
     subject = msg.get('Subject')
+    if subject is None:
+        return subject
+    return subject.translate(subject_trans_table, "\n")
+
+def grovel_message_information(msg, platform):
+    subject = subject_of(msg)
+    assert subject is not None
     match = subject_percent_change_re.search(subject)
     if match is None:
         print >>sys.stdout, subject, 'did not match!'
@@ -155,7 +165,6 @@ def relevant_messages(mbox, date_range, talos_test):
     test_of_interest = re.escape(talos_test)
     platform_of_interest = '|'.join([re.escape(p) for p in platforms])
 
-    subject_trans_table = string.maketrans("\t", " ")
     platform_tree_test = re.compile("^Talos (?:Regression :\\(|Improvement!) " + test_of_interest + r" (?:in|de)crease.*?(" + platform_of_interest + ") " + tree_of_interest + "$")
 
     for msg in mbox.itervalues():
@@ -166,11 +175,10 @@ def relevant_messages(mbox, date_range, talos_test):
         if not to.startswith('dev-tree-management@'):
             continue
 
-        subject = msg.get('Subject')
+        subject = subject_of(msg)
         if subject is None:
             continue
 
-        subject = subject.translate(subject_trans_table, "\n")
         match = platform_tree_test.search(subject)
         if match is not None:
             matched_platform = match.group(1)
