@@ -476,6 +476,9 @@ def digest_mailbox_to_summary(mbox, date_range, talos_test):
     # Cleanup by removing from == to changes.
     interesting_changes = [c for c in interesting_changes if not c.fromchange.same_node(c.tochange)]
 
+    if len(interesting_changes) == 0:
+        return 0, n_emails_sent
+
     # Cleanup by merging changes with identical fromchanges.
     temp = [interesting_changes[0]]
     for c in interesting_changes[1:]:
