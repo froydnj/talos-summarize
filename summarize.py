@@ -155,8 +155,8 @@ def relevant_messages(mbox, date_range, talos_test):
     test_of_interest = re.escape(talos_test)
     platform_of_interest = '|'.join([re.escape(p) for p in platforms])
 
-    platform_tree_test = re.compile("^Talos (?:Regression|Improvement).*?" + test_of_interest + r" (?:in|de)crease.*?(" + platform_of_interest + ") " + tree_of_interest + "$")
     subject_trans_table = string.maketrans("\t", " ")
+    platform_tree_test = re.compile("^Talos (?:Regression :\\(|Improvement!) " + test_of_interest + r" (?:in|de)crease.*?(" + platform_of_interest + ") " + tree_of_interest + "$")
 
     for msg in mbox.itervalues():
         to = msg.get('To')
