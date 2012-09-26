@@ -248,24 +248,7 @@ def insert_info_into_list(info, global_list):
             continue
 
         # Now the interesting cases
-        if info.fromchange > point.fromchange:
-            if info.tochange < point.tochange:
-                #     |-----INFO----|
-                # |--------POINT---------|
-                split = subsumed_three_way_split(info, point)
-                insert_three_way_split_into_list(i, global_list, split)
-                return
-            elif info.tochange == point.tochange:
-                # Unlikely, but merge the platform information for these.
-                point.deltas = merge_deltas(info, point)
-                return
-            else:
-                #      |-------INFO--------|
-                # |--------POINT------|
-                split = offset_three_way_split(point, info)
-                insert_three_way_split_into_list(i, global_list, split)
-                return
-        elif info.fromchange == point.fromchange:
+        if info.fromchange == point.fromchange:
             if info.tochange < point.tochange:
                 # |-----INFO----|
                 # |-------POINT------|
@@ -291,6 +274,25 @@ def insert_info_into_list(info, global_list):
                 else:
                     global_list[i] = lower
                     insert_info_into_list(upper, global_list)
+                return
+        elif info.fromchange == point.tochange:
+            continue
+        elif info.fromchange > point.fromchange:
+            if info.tochange < point.tochange:
+                #     |-----INFO----|
+                # |--------POINT---------|
+                split = subsumed_three_way_split(info, point)
+                insert_three_way_split_into_list(i, global_list, split)
+                return
+            elif info.tochange == point.tochange:
+                # Unlikely, but merge the platform information for these.
+                point.deltas = merge_deltas(info, point)
+                return
+            else:
+                #      |-------INFO--------|
+                # |--------POINT------|
+                split = offset_three_way_split(point, info)
+                insert_three_way_split_into_list(i, global_list, split)
                 return
         elif info.tochange > point.tochange:
             assert info.fromchange < point.fromchange
