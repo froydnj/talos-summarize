@@ -275,7 +275,7 @@ def insert_info_into_list(info, global_list):
                     global_list[i] = lower
                     insert_info_into_list(upper, global_list)
                 return
-        elif info.fromchange == point.tochange:
+        elif info.fromchange == point.tochange and info.fromchange.same_node(point.tochange):
             continue
         elif info.fromchange > point.fromchange:
             if info.tochange < point.tochange:
@@ -285,8 +285,11 @@ def insert_info_into_list(info, global_list):
                 insert_three_way_split_into_list(i, global_list, split)
                 return
             elif info.tochange == point.tochange:
-                # Unlikely, but merge the platform information for these.
-                point.deltas = merge_deltas(info, point)
+                lower = ChangeInformation(point.deltas,
+                                          point.fromchange, info.fromchange)
+                upper = ChangeInformation(merge_deltas(info, point),
+                                          info.fromchange, info.tochange)
+                global_list[i:i+1] = [lower, upper]
                 return
             else:
                 #      |-------INFO--------|
