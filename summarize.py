@@ -476,6 +476,7 @@ def talos_test_to_filename(talos_test):
     return string.translate(talos_test, tt, ",()").lower() + ".html"
 
 def digest_mailbox_to_summary(mbox, date_range, talos_test):
+    print "Digesting", talos_test, "!"
     interesting_changes = []
     n_emails_sent = 0
 
