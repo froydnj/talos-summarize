@@ -533,7 +533,8 @@ def main(argv):
 
     for t in tests:
         n_ranges, n_emails = t.write_html_summary()
-        print '%s: %d ranges, %d emails' % (t.talos_test, n_ranges, n_emails)
+        if n_emails > 0:
+            print '%s: %d ranges, %d emails' % (t.talos_test, n_ranges, n_emails)
 
 if __name__ == '__main__':
     main(sys.argv[1:])
