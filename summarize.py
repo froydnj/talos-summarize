@@ -483,6 +483,31 @@ def subject_regex_for_test(talos_test):
     platform_of_interest = '|'.join([re.escape(p) for p in platforms])
     return re.compile("^Talos (?:Regression :\\(|Improvement!) " + test_of_interest + r" (?:in|de)crease.*?(" + platform_of_interest + ") " + tree_of_interest + "$")
 
+def convert_ordered_changes_to_html(changes, date_range, talos_test):
+    # Cleanup by removing from == to changes.
+    changes = [c for c in changes if not c.fromchange.same_node(c.tochange)]
+
+    if len(changes) == 0:
+        return 0
+
+    # Cleanup by merging changes with identical fromchanges.
+    temp = [changes[0]]
+    for c in changes[1:]:
+        last = temp[-1]
+        if c.fromchange != last.fromchange:
+            temp.append(c)
+            continue
+        if c.tochange > last.tochange:
+            last.tochange = c.tochange
+        last.deltas = merge_deltas(c, last)
+    changes = temp
+
+    if len(changes) > 0:
+        with open(talos_test_to_filename(talos_test), 'w') as f:
+            print >>f, output_html_for(changes, date_range, talos_test)
+
+    return len(changes)
+
 def digest_mailbox_to_summary(mbox, date_range, talos_test):
     print "Digesting", talos_test, "!"
     interesting_changes = []
@@ -496,30 +521,8 @@ def digest_mailbox_to_summary(mbox, date_range, talos_test):
             continue
         insert_info_into_list(info, interesting_changes)
 
-    # Cleanup by removing from == to changes.
-    interesting_changes = [c for c in interesting_changes if not c.fromchange.same_node(c.tochange)]
-
-    if len(interesting_changes) == 0:
-        return 0, n_emails_sent
-
-    # Cleanup by merging changes with identical fromchanges.
-    temp = [interesting_changes[0]]
-    for c in interesting_changes[1:]:
-        last = temp[-1]
-        if c.fromchange != last.fromchange:
-            temp.append(c)
-            continue
-        if c.tochange > last.tochange:
-            last.tochange = c.tochange
-        last.deltas = merge_deltas(c, last)
-    interesting_changes = temp
-
-    if len(interesting_changes) > 0:
-        with open(talos_test_to_filename(talos_test), 'w') as f:
-            print >>f, output_html_for(interesting_changes, date_range, talos_test)
-
-    n_regression_ranges = len(interesting_changes)
-    return n_regression_ranges, n_emails_sent
+    n_ranges = convert_ordered_changes_to_html(interesting_changes, date_rage, talos_test)
+    return n_ranges, n_emails_sent
 
 def main(argv):
     mbox = mailbox.mbox(argv[0])
