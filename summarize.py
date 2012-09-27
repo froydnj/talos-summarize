@@ -25,11 +25,6 @@ changeset_range_re = re.compile(r"Changeset range: http://hg.mozilla.org/integra
 
 platforms = ['XP', 'Win7', 'MacOSX 10.6 (rev4)', 'Linux x64', 'Linux', 'WINNT 5.2', 'WINNT 6.1',
              'CentOS release 5 (Final)', 'CentOS (x86_64) release 5 (Final)', 'MacOSX 10.7']
-tests = ['Ts, MED Dirty Profile',
-         'Ts, MAX Dirty Profile',
-         'Ts, Paint',
-         'Ts Paint, MED Dirty Profile',
-         'Ts Paint, MAX Dirty Profile']
 
 msg_template = string.Template("${strtime} ${sign}${amount}% from ${fromchange} to ${tochange}")
 
