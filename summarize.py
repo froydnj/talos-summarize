@@ -158,8 +158,7 @@ def parse_date_range(mutt_date_desc):
     end_date = datetime.datetime(int(m.group(6)), int(m.group(5)), int(m.group(4))) + datetime.date.resolution
     return (start_date, end_date)
 
-def relevant_messages(mbox, date_range, talos_test):
-    (begin_date, end_date) = parse_date_range(date_range)
+def relevant_messages(mbox, begin_date, end_date, talos_test):
     platform_tree_test = subject_regex_for_test(talos_test)
 
     for msg in mbox.itervalues():
@@ -483,8 +482,9 @@ def digest_mailbox_to_summary(mbox, date_range, talos_test):
     print "Digesting", talos_test, "!"
     interesting_changes = []
     n_emails_sent = 0
+    (begin_date, end_date) = parse_date_range(date_range)
 
-    for (msg, platform) in relevant_messages(mbox, date_range, talos_test):
+    for (msg, platform) in relevant_messages(mbox, begin_date, end_date, talos_test):
         n_emails_sent += 1
         info = grovel_message_information(msg, platform)
         if info is None:
