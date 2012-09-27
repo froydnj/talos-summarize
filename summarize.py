@@ -168,7 +168,7 @@ def message_matches_p(msg, begin_date, end_date, subject_regex):
 
     subject = subject_of(msg)
     if subject is None:
-        continue
+        return None
 
     match = subject_regex.search(subject)
     if match is not None:
