@@ -500,17 +500,6 @@ def convert_ordered_changes_to_html(changes, date_range, talos_test):
 
     return len(changes)
 
-def digest_mailbox_to_summary(mbox, date_range, talos_test):
-    print "Digesting", talos_test, "!"
-    t = TalosTest(talos_test, date_range)
-    interesting_changes = []
-    n_emails_sent = 0
-
-    for msg in mbox.itervalues():
-        t.process_message(msg)
-
-    return t.write_html_summary()
-
 class TalosTest:
     def __init__(self, talos_test, date_range):
         self.talos_test = talos_test
@@ -542,10 +531,16 @@ class TalosTest:
 def main(argv):
     mbox = mailbox.mbox(argv[0])
     date_range = argv[1]
+    tests = map(lambda t: TalosTest(t, date_range), all_talos_test_descriptions)
 
-    for test in all_talos_test_descriptions:
-        n_ranges, n_emails = digest_mailbox_to_summary(mbox, date_range, test)
-        print '%s: %d ranges, %d emails' % (test, n_ranges, n_emails)
+    for msg in mbox.itervalues():
+        for t in tests:
+            if t.process_message(msg):
+                break
+
+    for t in tests:
+        n_ranges, n_emails = t.write_html_summary()
+        print '%s: %d ranges, %d emails' % (t.talos_test, n_ranges, n_emails)
 
 if __name__ == '__main__':
     main(sys.argv[1:])
