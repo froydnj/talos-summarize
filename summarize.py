@@ -454,7 +454,7 @@ all_talos_test_descriptions = [ 'Ts, MED Dirty Profile',
                                 'a11y Row Major MozAfterPaint',
                                 'Ts, Paint',
                                 'Robocop Pan Benchmark',
-                                'Robocopy Checkerboarding No Snapshot Benchmark',
+                                'Robocop Checkerboarding No Snapshot Benchmark',
                                 'Robocop Checkerboarding Real User Benchmark' ]
 
 def talos_test_to_filename(talos_test):
