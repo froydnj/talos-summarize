@@ -159,13 +159,8 @@ def parse_date_range(mutt_date_desc):
     return (start_date, end_date)
 
 def relevant_messages(mbox, date_range, talos_test):
-    global platforms
-    tree_of_interest = "Mozilla-Inbound(-Non-PGO)?"
     (begin_date, end_date) = parse_date_range(date_range)
-    test_of_interest = re.escape(talos_test)
-    platform_of_interest = '|'.join([re.escape(p) for p in platforms])
-
-    platform_tree_test = re.compile("^Talos (?:Regression :\\(|Improvement!) " + test_of_interest + r" (?:in|de)crease.*?(" + platform_of_interest + ") " + tree_of_interest + "$")
+    platform_tree_test = subject_regex_for_test(talos_test)
 
     for msg in mbox.itervalues():
         to = msg.get('To')
@@ -476,6 +471,13 @@ all_talos_test_descriptions = [ 'Ts, MED Dirty Profile',
 def talos_test_to_filename(talos_test):
     tt = string.maketrans(" ", "-")
     return string.translate(talos_test, tt, ",()").lower() + ".html"
+
+def subject_regex_for_test(talos_test):
+    global platforms
+    tree_of_interest = "Mozilla-Inbound(-Non-PGO)?"
+    test_of_interest = re.escape(talos_test)
+    platform_of_interest = '|'.join([re.escape(p) for p in platforms])
+    return re.compile("^Talos (?:Regression :\\(|Improvement!) " + test_of_interest + r" (?:in|de)crease.*?(" + platform_of_interest + ") " + tree_of_interest + "$")
 
 def digest_mailbox_to_summary(mbox, date_range, talos_test):
     print "Digesting", talos_test, "!"
