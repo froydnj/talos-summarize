@@ -509,8 +509,7 @@ def digest_mailbox_to_summary(mbox, date_range, talos_test):
     for msg in mbox.itervalues():
         t.process_message(msg)
 
-    n_ranges = convert_ordered_changes_to_html(t.changes, date_rage, talos_test)
-    return n_ranges, t.n_emails
+    return t.write_html_summary()
 
 class TalosTest:
     def __init__(self, talos_test, date_range):
@@ -533,6 +532,12 @@ class TalosTest:
         if info is not None:
             insert_info_into_list(info, self.changes)
         return True
+
+    def write_html_summary(self):
+        n_ranges = convert_ordered_changes_to_html(self.changes,
+                                                   self.date_range,
+                                                   self.talos_test)
+        return n_ranges, self.n_emails
 
 def main(argv):
     mbox = mailbox.mbox(argv[0])
