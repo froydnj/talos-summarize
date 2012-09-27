@@ -158,31 +158,36 @@ def parse_date_range(mutt_date_desc):
     end_date = datetime.datetime(int(m.group(6)), int(m.group(5)), int(m.group(4))) + datetime.date.resolution
     return (start_date, end_date)
 
+def message_matches_p(msg, begin_date, end_date, subject_regex):
+    to = msg.get('To')
+    if to is None:
+        return None
+
+    if not to.startswith('dev-tree-management@'):
+        return None
+
+    subject = subject_of(msg)
+    if subject is None:
+        continue
+
+    match = subject_regex.search(subject)
+    if match is not None:
+        matched_platform = match.group(1)
+        non_pgo = match.group(2)
+        if non_pgo is None:
+            matched_platform += "-PGO"
+        # This is a little silly.
+        msg_date = datetime.datetime.fromtimestamp(time.mktime(rfc822.parsedate(msg.get('Date'))))
+        if (begin_date < msg_date) and (msg_date < end_date):
+            return msg, matched_platform
+
 def relevant_messages(mbox, begin_date, end_date, talos_test):
     platform_tree_test = subject_regex_for_test(talos_test)
 
     for msg in mbox.itervalues():
-        to = msg.get('To')
-        if to is None:
-            continue
-
-        if not to.startswith('dev-tree-management@'):
-            continue
-
-        subject = subject_of(msg)
-        if subject is None:
-            continue
-
-        match = platform_tree_test.search(subject)
-        if match is not None:
-            matched_platform = match.group(1)
-            non_pgo = match.group(2)
-            if non_pgo is None:
-                matched_platform += "-PGO"
-            # This is a little silly.
-            msg_date = datetime.datetime.fromtimestamp(time.mktime(rfc822.parsedate(msg.get('Date'))))
-            if (begin_date < msg_date) and (msg_date < end_date):
-                yield msg, matched_platform
+        match = message_matches_p(msg, begin_date, end_date, platform_tree_test)
+        if match:
+            yield match
 
 def merge_deltas(x, y):
     deltas = set()
