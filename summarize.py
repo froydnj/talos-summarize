@@ -181,14 +181,6 @@ def message_matches_p(msg, begin_date, end_date, subject_regex):
         if (begin_date < msg_date) and (msg_date < end_date):
             return msg, matched_platform
 
-def relevant_messages(mbox, begin_date, end_date, talos_test):
-    platform_tree_test = subject_regex_for_test(talos_test)
-
-    for msg in mbox.itervalues():
-        match = message_matches_p(msg, begin_date, end_date, platform_tree_test)
-        if match:
-            yield match
-
 def merge_deltas(x, y):
     deltas = set()
     intersection = x.deltas & y.deltas
@@ -510,19 +502,37 @@ def convert_ordered_changes_to_html(changes, date_range, talos_test):
 
 def digest_mailbox_to_summary(mbox, date_range, talos_test):
     print "Digesting", talos_test, "!"
+    t = TalosTest(talos_test, date_range)
     interesting_changes = []
     n_emails_sent = 0
-    (begin_date, end_date) = parse_date_range(date_range)
 
-    for (msg, platform) in relevant_messages(mbox, begin_date, end_date, talos_test):
-        n_emails_sent += 1
+    for msg in mbox.itervalues():
+        t.process_message(msg)
+
+    n_ranges = convert_ordered_changes_to_html(t.changes, date_rage, talos_test)
+    return n_ranges, t.n_emails
+
+class TalosTest:
+    def __init__(self, talos_test, date_range):
+        self.talos_test = talos_test
+        self.subject_regex = subject_regex_for_test(talos_test)
+        self.date_range = date_range
+        self.begin_date, self.end_date = parse_date_range(date_range)
+        self.changes = []
+        self.n_emails = 0
+
+    def process_message(self, msg):
+        match = message_matches_p(msg, self.begin_date, self.end_date,
+                                  self.subject_regex)
+        if match is None:
+            return False
+
+        msg, platform = match
+        self.n_emails += 1
         info = grovel_message_information(msg, platform)
-        if info is None:
-            continue
-        insert_info_into_list(info, interesting_changes)
-
-    n_ranges = convert_ordered_changes_to_html(interesting_changes, date_rage, talos_test)
-    return n_ranges, n_emails_sent
+        if info is not None:
+            insert_info_into_list(info, self.changes)
+        return True
 
 def main(argv):
     mbox = mailbox.mbox(argv[0])
