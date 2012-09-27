@@ -11,11 +11,9 @@ import string
 import rfc822
 import time
 import datetime
-import hgapi
 import urllib2
 import simplejson as json
 
-m_i = hgapi.Repo('/home/froydnj/src/mozilla-inbound/')
 m_i_json_pushes_url = "http://hg.mozilla.org/integration/mozilla-inbound/json-pushes?fromchange=%s&tochange=%s"
 m_i_pushloghtml = "http://hg.mozilla.org/integration/mozilla-inbound/pushloghtml?fromchange=%s&tochange=%s"
 m_i_rev = "http://hg.mozilla.org/integration/mozilla-inbound/rev/%s"
