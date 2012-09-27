@@ -344,7 +344,7 @@ def url_for_change(change):
     else:
         return m_i_pushloghtml % (change.fromchange, change.tochange)
 
-cell_template = string.Template('<td${style}${rowspan}>${sign}${amount}</td>')
+cell_template = string.Template('<td${style}${align}${rowspan}>${sign}${amount}</td>')
 
 class TableChangeCell:
     def __init__(self, platform, delta):
@@ -355,7 +355,8 @@ class TableChangeCell:
         mapping = { 'style': '',
                     'rowspan': '',
                     'sign': '',
-                    'amount': '' }
+                    'amount': '',
+                    'align': '' }
         if self.delta is not None:
             style = ' style="background:#6666ff"'
             if self.delta.sign == '+':
@@ -365,6 +366,7 @@ class TableChangeCell:
                 mapping['rowspan'] = ' rowspan="%s"' % self.rowspan
             mapping['sign'] = self.delta.sign
             mapping['amount'] = self.delta.amount
+            mapping['align'] = ' align=center'
         return cell_template.substitute(mapping)
 
 row_template = string.Template('<tr>${cells}</tr>')
