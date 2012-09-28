@@ -405,7 +405,7 @@ def try_increase_rowspan_of_previous_cell(rows, platform, delta):
     for r in reversed(rows):
         cell = r.cell_for_platform(platform)
         if cell is not None:
-            if cell.delta == delta:
+            if str(cell.delta) == str(delta):
                 cell.rowspan += 1
                 return True
             return False
