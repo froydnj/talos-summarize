@@ -356,7 +356,13 @@ def url_for_change(change):
     else:
         return m_i_pushloghtml % (change.fromchange, change.tochange)
 
-cell_template = string.Template('<td${style}${align}${rowspan}>${sign}${amount}</td>')
+cell_template = string.Template('<td${class}${align}${rowspan}>${sign}${amount}</td>')
+
+def class_attribute_for_delta(delta):
+    if delta.sign == '+':
+        return "plus"
+    else:
+        return "minus"
 
 class TableChangeCell:
     def __init__(self, platform, delta):
@@ -364,16 +370,14 @@ class TableChangeCell:
         self.delta = delta
         self.rowspan = 1
     def output_html(self):
-        mapping = { 'style': '',
+        mapping = { 'class': '',
                     'rowspan': '',
                     'sign': '',
                     'amount': '',
                     'align': '' }
         if self.delta is not None:
-            style = ' style="background:#6666ff"'
-            if self.delta.sign == '+':
-                style = ' style="background:red"'
-            mapping['style'] = style
+            klass = ' class="%s"' % class_attribute_for_delta(self.delta)
+            mapping['class'] = klass
             if self.rowspan > 1:
                 mapping['rowspan'] = ' rowspan="%s"' % self.rowspan
             mapping['sign'] = self.delta.sign
@@ -442,13 +446,21 @@ def output_cumulative_row(platforms, rows):
                 cumulative[i] *= amount
 
     c_row = ["<td>Cumulative score baseline=100</td>"]
-    c_row.extend(["<td align=center>%.02f</td>" % amount for amount in cumulative])
+    c_row.extend(['<td align=center class="%s">%.02f</td>' % ("plus" if amount > 100 else "minus", amount) for amount in cumulative])
     return "<tr>" + "".join(c_row) + "</tr>"
 
 html_page_template = string.Template("""
 <html>
 <head>
   <title>Summary of changes for ${test} over ${date_range}</title>
+  <style>
+.plus {
+  background: ${plus_color};
+}
+.minus {
+  background: ${minus_color};
+}
+  </style>
 </head>
 <body>
 <h1>Summary of changes for ${test} over ${date_range}</h1>
@@ -468,9 +480,13 @@ def output_html_for(changes, date_range, talos_test):
     rows.extend([r.output_html() for r in structure])
     rows.append(output_cumulative_row(platforms, structure))
 
-    return html_page_template.substitute({ 'test': talos_test,
-                                           'date_range': date_range,
-                                           'table': '\n'.join(rows) })
+    mapping = { 'test': talos_test,
+                'date_range': date_range,
+                'table': '\n'.join(rows),
+                'plus_color': 'red',
+                'minus_color': 'green' }
+
+    return html_page_template.substitute(mapping)
 
 all_talos_test_descriptions = [ 'Ts, MED Dirty Profile',
                                 'Ts, MAX Dirty Profile',
