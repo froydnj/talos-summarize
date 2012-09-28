@@ -13,6 +13,7 @@ import time
 import datetime
 import urllib2
 import simplejson as json
+import cPickle
 
 m_i_json_pushes_url = "http://hg.mozilla.org/integration/mozilla-inbound/json-pushes?fromchange=%s&tochange=%s"
 m_i_pushloghtml = "http://hg.mozilla.org/integration/mozilla-inbound/pushloghtml?fromchange=%s&tochange=%s"
@@ -98,6 +99,32 @@ def subject_of(msg):
         return subject
     return subject.translate(subject_trans_table, "\n")
 
+class JSONCache:
+    def __init__(self, filename):
+        self.filename = filename
+        try:
+            with open(filename, 'r') as f:
+                p = cPickle.Unpickler(f)
+                self.cache = p.load()
+        except:
+            self.cache = {}
+    def json(self, fromchange, tochange):
+        key = fromchange + tochange
+        if key in self.cache:
+            return self.cache[key]
+
+        m_i_url = m_i_json_pushes_url % (fromchange, tochange)
+        json_stream = urllib2.urlopen(m_i_url)
+        json_string = json_stream.read()
+        self.cache[key] = json_string
+        return json_string
+    def save(self):
+        with open(self.filename, 'w') as f:
+            p = cPickle.Pickler(f)
+            p.dump(self.cache)
+
+json_cache = JSONCache(".summarize_cache")
+
 def grovel_message_information(msg, platform):
     subject = subject_of(msg)
     assert subject is not None
@@ -128,9 +155,8 @@ def grovel_message_information(msg, platform):
 
     ci = ChangeInformation(deltas, fromchange, tochange)
 
-    m_i_url = m_i_json_pushes_url % (fromchange, tochange)
-    json_stream = urllib2.urlopen(m_i_url)
-    json_pushes = json.loads(json_stream.read())
+    json_string = json_cache.json(fromchange, tochange)
+    json_pushes = json.loads(json_string)
 
     # You might think the json information comes back in sorted revision order.
     # You would be wrong.
@@ -537,6 +563,8 @@ def main(argv):
         n_ranges, n_emails = t.write_html_summary()
         if n_emails > 0:
             print '%s: %d ranges, %d emails' % (t.talos_test, n_ranges, n_emails)
+
+    json_cache.save()
 
 if __name__ == '__main__':
     main(sys.argv[1:])
