@@ -431,6 +431,20 @@ def build_table_structure(platforms, changes):
         table_rows.append(current)
     return table_rows
 
+def output_cumulative_row(platforms, rows):
+    cumulative = [100.0] * len(platforms)
+
+    for r in rows:
+        for (i, p) in enumerate(platforms):
+            cell = r.cell_for_platform(p)
+            if cell and cell.delta is not None:
+                amount = 1.0 + float("%s%s" % (cell.delta.sign, cell.delta.amount))/100.0
+                cumulative[i] *= amount
+
+    c_row = ["<td>Cumulative score baseline=100</td>"]
+    c_row.extend(["<td align=center>%.02f</td>" % amount for amount in cumulative])
+    return "<tr>" + "".join(c_row) + "</tr>"
+
 html_page_template = string.Template("""
 <html>
 <head>
@@ -452,6 +466,7 @@ def output_html_for(changes, date_range, talos_test):
     rows = [output_header_row(platforms)]
     structure = build_table_structure(platforms, changes)
     rows.extend([r.output_html() for r in structure])
+    rows.append(output_cumulative_row(platforms, structure))
 
     return html_page_template.substitute({ 'test': talos_test,
                                            'date_range': date_range,
