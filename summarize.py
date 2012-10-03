@@ -123,8 +123,6 @@ class JSONCache:
             p = cPickle.Pickler(f)
             p.dump(self.cache)
 
-json_cache = JSONCache(".summarize_cache")
-
 def grovel_message_information(msg, platform):
     subject = subject_of(msg)
     assert subject is not None
@@ -590,7 +588,26 @@ class TalosTest:
                                                    self.talos_test)
         return n_ranges, self.n_emails
 
-def main(argv):
+def build_option_parser():
+    usage = "usage: %prog [options] mailbox-file date-range"
+    parser = optparse.OptionParser(usage=usage)
+
+    parser.add_option("-c", "--cache-file", metavar="CACHE",
+                      action="store", type="string", dest="cache_file",
+                      help="file to cache json-pushlog information in",
+                      default=".json_cache")
+    parser.add_option("-o", "--output-file", metavar="FILE",
+                      action="store", type="string", dest="output_file",
+                      help="HTML output file",
+                      default="index.html")
+
+    return parser
+
+def main():
+    (options, argv) = build_option_parser().parse_args()
+
+    json_cache = JSONCache(options.cache_file)
+
     mbox = mailbox.mbox(argv[0])
     date_range = argv[1]
     tests = map(lambda t: TalosTest(t, date_range), all_talos_test_descriptions)
@@ -608,4 +625,4 @@ def main(argv):
     json_cache.save()
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    main()
