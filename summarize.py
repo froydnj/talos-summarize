@@ -444,7 +444,10 @@ def output_cumulative_row(platforms, rows):
                 cumulative[i] *= amount
 
     c_row = ["<td>Cumulative score baseline=100</td>"]
-    c_row.extend(['<td align=center class="%s">%.02f</td>' % ("plus" if amount > 100 else "minus", amount) for amount in cumulative])
+    def format_cell(amount):
+        cell = '<td align=center class="%s">%.02f</td>'
+        return cell % ("plus" if amount > 100 else "minus", amount)
+    c_row.extend([format_cell(amount)  for amount in cumulative])
     return "<tr>" + "".join(c_row) + "</tr>"
 
 html_page_template = string.Template("""
