@@ -14,6 +14,7 @@ import datetime
 import urllib2
 import simplejson as json
 import cPickle
+import optparse
 
 m_i_json_pushes_url = "http://hg.mozilla.org/integration/mozilla-inbound/json-pushes?fromchange=%s&tochange=%s"
 m_i_pushloghtml = "http://hg.mozilla.org/integration/mozilla-inbound/pushloghtml?fromchange=%s&tochange=%s"
@@ -21,6 +22,8 @@ m_i_rev = "http://hg.mozilla.org/integration/mozilla-inbound/rev/%s"
 
 subject_percent_change_re = re.compile("^Talos (?:Regression|Improvement).*?(de|in)crease ([0-9]+(?:\\.[0-9]+(?:e\\+[0-9]+)?)?)%", re.DOTALL)
 changeset_range_re = re.compile(r"Changeset range: http://hg.mozilla.org/integration/mozilla-inbound/pushloghtml\?fromchange=([0-9a-f]{12,})&tochange=([0-9a-f]{12,})")
+
+json_cache = None
 
 platforms = ['XP', 'Win7', 'MacOSX 10.6 (rev4)', 'Linux x64', 'Linux',
              'WINNT 5.2', 'WINNT 6.1',
@@ -555,7 +558,7 @@ class TalosTest:
         rows.extend([r.output_html() for r in structure])
         rows.append(output_cumulative_row(platforms, structure))
 
-        return (rows, self.n_emails, len(changes))
+        return (rows, self.n_emails, len(self.changes))
 
     def end(self):
         # Cleanup by removing from == to changes.
@@ -593,7 +596,7 @@ def build_option_parser():
 
 def main():
     (options, argv) = build_option_parser().parse_args()
-
+    global json_cache
     json_cache = JSONCache(options.cache_file)
 
     mbox = mailbox.mbox(argv[0])
