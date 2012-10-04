@@ -453,7 +453,7 @@ def output_cumulative_row(platforms, rows):
 html_page_template = string.Template("""
 <html>
 <head>
-  <title>Summary of changes for ${test} over ${date_range}</title>
+  <title>Summary of changes over ${date_range}</title>
   <style>
 .plus {
   background: ${plus_color};
@@ -464,30 +464,10 @@ html_page_template = string.Template("""
   </style>
 </head>
 <body>
-<h1>Summary of changes for ${test} over ${date_range}</h1>
-<table border="1">
-${table}
-</table>
+<h1>Summary of changes over ${date_range}</h1>
+${main_body}
 </body>
 </html>""")
-
-def output_html_for(changes, date_range, talos_test):
-    platforms = collect_platforms(changes)
-    platforms = [x for x in platforms]
-    platforms.sort()
-
-    rows = [output_header_row(platforms)]
-    structure = build_table_structure(platforms, changes)
-    rows.extend([r.output_html() for r in structure])
-    rows.append(output_cumulative_row(platforms, structure))
-
-    mapping = { 'test': talos_test,
-                'date_range': date_range,
-                'table': '\n'.join(rows),
-                'plus_color': 'red',
-                'minus_color': 'green' }
-
-    return html_page_template.substitute(mapping)
 
 all_talos_test_descriptions = [ 'Ts, MED Dirty Profile',
                                 'Ts, MAX Dirty Profile',
@@ -538,13 +518,6 @@ def subject_regex_for_test(talos_test):
     platform_of_interest = '|'.join([re.escape(p) for p in platforms])
     return re.compile("^Talos (?:Regression :\\(|Improvement!) " + test_of_interest + r" (?:in|de)crease.*?(" + platform_of_interest + ") " + tree_of_interest + "$")
 
-def convert_ordered_changes_to_html(changes, date_range, talos_test):
-    if len(changes) > 0:
-        with open(talos_test_to_filename(talos_test), 'w') as f:
-            print >>f, output_html_for(changes, date_range, talos_test)
-
-    return len(changes)
-
 class TalosTest:
     def __init__(self, talos_test, date_range):
         self.talos_test = talos_test
@@ -567,6 +540,23 @@ class TalosTest:
             insert_info_into_list(info, self.changes)
         return True
 
+    def output_html_table_rows(self):
+        self.end()
+
+        if len(self.changes) == 0:
+            return (None, self.n_emails, 0)
+
+        platforms = collect_platforms(self.changes)
+        platforms = [x for x in platforms]
+        platforms.sort()
+
+        rows = [output_header_row(platforms)]
+        structure = build_table_structure(platforms, self.changes)
+        rows.extend([r.output_html() for r in structure])
+        rows.append(output_cumulative_row(platforms, structure))
+
+        return (rows, self.n_emails, len(changes))
+
     def end(self):
         # Cleanup by removing from == to changes.
         self.changes = [c for c in self.changes if not c.fromchange.same_node(c.tochange)]
@@ -585,13 +575,6 @@ class TalosTest:
                 last.tochange = c.tochange
             last.deltas = merge_deltas(c, last)
         self.changes = temp
-
-    def write_html_summary(self):
-        self.end()
-        n_ranges = convert_ordered_changes_to_html(self.changes,
-                                                   self.date_range,
-                                                   self.talos_test)
-        return n_ranges, self.n_emails
 
 def build_option_parser():
     usage = "usage: %prog [options] mailbox-file date-range"
@@ -622,10 +605,28 @@ def main():
             if t.process_message(msg):
                 break
 
+    tests_for_page = []
     for t in tests:
-        n_ranges, n_emails = t.write_html_summary()
-        if n_emails > 0:
+        (rows, n_emails, n_ranges) = t.output_html_table_rows()
+        if rows is not None:
+            tests_for_page.append((t.talos_test, rows))
             print '%s: %d ranges, %d emails' % (t.talos_test, n_ranges, n_emails)
+
+    block = string.Template("""<h2>${test}</h2>
+<table border="1">
+${table}
+</table>""")
+    main_body = [block.substitute({ 'test': test_name,
+                                    'table': '\n'.join(rows) })
+                 for (test_name, rows) in tests_for_page]
+
+    mapping = { 'date_range': date_range,
+                'main_body': '\n'.join(main_body),
+                'plus_color': 'red',
+                'minus_color': 'green' }
+
+    with open(options.output_file, 'w') as f:
+        print >>f, html_page_template.substitute(mapping)
 
     json_cache.save()
 
