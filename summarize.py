@@ -468,6 +468,7 @@ html_page_template = string.Template("""
 </head>
 <body>
 <h1>Summary of changes over ${date_range}</h1>
+${toc}
 ${main_body}
 </body>
 </html>""")
@@ -623,8 +624,13 @@ ${table}
                                     'test': test_name,
                                     'table': '\n'.join(rows) })
                  for (test_name, rows) in tests_for_page]
+    toc_label = string.Template('<a href="#${href}">${test}</a>')
+    toc = [toc_label.substitute({ 'href': talos_test_to_href(test_name),
+                                  'test': test_name })
+           for (test_name, rows) in tests_for_page]
 
     mapping = { 'date_range': date_range,
+                'toc': ' | '.join(toc),
                 'main_body': '\n'.join(main_body),
                 'plus_color': 'red',
                 'minus_color': 'green' }
