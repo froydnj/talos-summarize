@@ -510,9 +510,9 @@ all_talos_test_descriptions = [ 'Ts, MED Dirty Profile',
                                 'Robocop Checkerboarding No Snapshot Benchmark',
                                 'Robocop Checkerboarding Real User Benchmark' ]
 
-def talos_test_to_filename(talos_test):
+def talos_test_to_href(talos_test):
     tt = string.maketrans(" ", "-")
-    return string.translate(talos_test, tt, ",()").lower() + ".html"
+    return string.translate(talos_test, tt, ",()").lower()
 
 def subject_regex_for_test(talos_test):
     global platforms
@@ -615,11 +615,12 @@ def main():
             tests_for_page.append((t.talos_test, rows))
             print '%s: %d ranges, %d emails' % (t.talos_test, n_ranges, n_emails)
 
-    block = string.Template("""<h2>${test}</h2>
+    block = string.Template("""<h2><a name="${href}">${test}</a></h2>
 <table border="1">
 ${table}
 </table>""")
-    main_body = [block.substitute({ 'test': test_name,
+    main_body = [block.substitute({ 'href': talos_test_to_href(test_name),
+                                    'test': test_name,
                                     'table': '\n'.join(rows) })
                  for (test_name, rows) in tests_for_page]
 
