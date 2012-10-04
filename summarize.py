@@ -615,6 +615,7 @@ def main():
         if rows is not None:
             tests_for_page.append((t.talos_test, rows))
             print '%s: %d ranges, %d emails' % (t.talos_test, n_ranges, n_emails)
+    tests_for_page.sort()
 
     block = string.Template("""<h2><a name="${href}">${test}</a></h2>
 <table border="1">
