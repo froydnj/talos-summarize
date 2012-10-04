@@ -539,24 +539,6 @@ def subject_regex_for_test(talos_test):
     return re.compile("^Talos (?:Regression :\\(|Improvement!) " + test_of_interest + r" (?:in|de)crease.*?(" + platform_of_interest + ") " + tree_of_interest + "$")
 
 def convert_ordered_changes_to_html(changes, date_range, talos_test):
-    # Cleanup by removing from == to changes.
-    changes = [c for c in changes if not c.fromchange.same_node(c.tochange)]
-
-    if len(changes) == 0:
-        return 0
-
-    # Cleanup by merging changes with identical fromchanges.
-    temp = [changes[0]]
-    for c in changes[1:]:
-        last = temp[-1]
-        if c.fromchange != last.fromchange:
-            temp.append(c)
-            continue
-        if c.tochange > last.tochange:
-            last.tochange = c.tochange
-        last.deltas = merge_deltas(c, last)
-    changes = temp
-
     if len(changes) > 0:
         with open(talos_test_to_filename(talos_test), 'w') as f:
             print >>f, output_html_for(changes, date_range, talos_test)
@@ -585,7 +567,27 @@ class TalosTest:
             insert_info_into_list(info, self.changes)
         return True
 
+    def end(self):
+        # Cleanup by removing from == to changes.
+        self.changes = [c for c in self.changes if not c.fromchange.same_node(c.tochange)]
+
+        if len(self.changes) == 0:
+            return 0
+
+        # Cleanup by merging changes with identical fromchanges.
+        temp = [self.changes[0]]
+        for c in self.changes[1:]:
+            last = temp[-1]
+            if c.fromchange != last.fromchange:
+                temp.append(c)
+                continue
+            if c.tochange > last.tochange:
+                last.tochange = c.tochange
+            last.deltas = merge_deltas(c, last)
+        self.changes = temp
+
     def write_html_summary(self):
+        self.end()
         n_ranges = convert_ordered_changes_to_html(self.changes,
                                                    self.date_range,
                                                    self.talos_test)
